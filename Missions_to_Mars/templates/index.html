@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mission to Mars</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+  <!-- Welcome @ Top -->
+  <div class="container-fluid">
+    <div class="jumbotron text-center">
+      <h1>Visit Mars!</h1>
+      <p>Get the Headlines and Explore the Hempispheres</p>
+      <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Retrieve Data</a></p>
+    </div>
+
+    <!---------------------------->
+    <!-- Featured Image Section -->
+    <!---------------------------->
+    <div>
+      <h2>Featured Image:</h2>
+      {% for item in mars_info %}
+        {% if item.featured_img %}
+          <img src="{{item.featured_img }}">
+        {% endif %}
+      {% endfor %}
+    </div>  
+
+    <!------------------------>
+    <!-- Mars Facts Section -->
+    <!------------------------>
+    <div>
+      <h2>Mars Facts:</h2>
+      {% for item in mars_info %}
+        {% if item.mars_facts %}
+          {{ item.mars_facts }}
+        {% endif %}
+      {% endfor %}        
+    </div>
+
+    <!------------------------------>
+    <!-- Mars Hemispheres Section -->
+    <!------------------------------>
+    <div>
+      <h2>Mars Hemispheres:</h2>
+
+        <div class="card" style="width: 100rem;">
+          <div class="card-body">
+            {% for item in mars_info %}
+              {% if item.hem_title %}
+                <h5 class="card-title"><b>{{ item.hem_title }}</b></h5>
+                <a href="{{ item.hem_hi_res }}" class="btn btn-primary">Download Hi-Res Image</a>
+              {% endif %}
+            {% endfor %} 
+          </div>
+        </div>
+      
+    </div>
+
+    <!----------------------->
+    <!-- Headlines Section -->
+    <!----------------------->
+
+    <h2>Today's Headlines:</h2>
+    {% for item in mars_info %}
+      {% if item.news_title %}
+        <div class="card" style="width: 100rem;">
+          <div class="card-body">
+            
+            <h5 class="card-title"><b>{{ item.news_title }}</b></h5>
+            <p class="card-text">{{ item.paragraph_text }}</p>
+            <p><br></p>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  </div>
+</body>
+
+</html>

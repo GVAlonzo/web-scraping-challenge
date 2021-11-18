@@ -1,224 +1,229 @@
-import numpy as np
-
-import sqlalchemy
-import datetime as dt
-from datetime import datetime
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func
-
-from flask import Flask, jsonify
-
-
-
-
-#################################################
-# Database Setup
-#################################################
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+########################################################################
+##
+##  Web Scraping Homework - Mission to Mars
+##
+##       Author: George Alonzo
+##     Due Date: November 20, 2021
+##
+########################################################################
+from splinter import Browser
+from bs4 import BeautifulSoup
+import time
+from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
 
 
-# reflect an existing database into a new model
-Base = automap_base()
-# reflect the tables
-Base.prepare(engine, reflect=True)
+def scrape_info():
 
+    print("==========================================")
+    print(" BEGINNING SCRAPE_MARS.PY")
+    print("==========================================")
 
-# Save reference to the table
-Measurement = Base.classes.measurement
+    # Set up Splinter
+    executable_path = {'executable_path': ChromeDriverManager().install()}
+    browser = Browser('chrome', **executable_path, headless=False)
 
-# Save reference to the table
-Station = Base.classes.station
+    mars_data=[]
 
-
-
-#################################################
-# Flask Setup
-#################################################
-app = Flask(__name__)
-
-
-
-
-#################################################
-# Flask Routes
-#################################################
-
-@app.route("/")
-def home():
-    """List all available api routes."""
-    return (
-        f"Available Routes:<br/>"
-        f"<br>\/ Return JSON list of Date and Precipitation from the dataset \/<br/>"
-        f"/api/v1.0/precipitation<br/>"
-        f"<br>\/ Return JSON list of Stations from the dataset \/<br/>"
-        f"/api/v1.0/stations<br/>"
-        f"<br>\/ Return JSON list of temperature observations (TOBS) for the previous year (most active Station) \/<br/>"
-        f"/api/v1.0/tobs<br/>"
-        f"<br>\/ Return JSON list OF MIN, AVG, AND MAX temperatures >= date provided \/<br/>"
-        f"/api/v1.0/YYYY-MM-DD<br/>"
-        f"<br>\/ Return JSON list OF MIN, AVG, AND MAX temperatures BETWEEN dates provided (inclusive) \/<br/>"
-        f"/api/v1.0/YYYY-MM-DD/YYYY-MM-DD<br/>"
-    )
-
-#################################################
-# PRECIPITATION
-#################################################
-@app.route("/api/v1.0/precipitation")
-def precipitation():
+    ######################################################################################
+    ##
+    ##  BEGIN SCRAPE FOR FEATURED IMAGE
+    ##
+    ######################################################################################
     
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
+    print("**** BEGIN SCRAPE FOR FEATURED IMAGE ****")
 
-    """Return a list of all measurement data"""
-    # Query all measurements
-    #results = session.query(Measurement.id, Measurement.station, Measurement.date, Measurement.prcp, Measurement.tobs).all()
-    results = session.query(Measurement.date, Measurement.prcp).\
-        order_by(Measurement.date.asc()).all()
+    url = 'https://spaceimages-mars.com/'
+    browser.visit(url)
+
+    time.sleep(1)
+
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')   
+
+    results = soup.find_all('div', class_='header')
+
+    for result in results:
+        featured_image = result.find('img', class_='headerimage fade-in')['src']
+        featured_image_url = "https://spaceimages-mars.com/"+featured_image
+      
+    mars_data_dict = {
+    "featured_img": featured_image_url
+    }
+    mars_data.append(mars_data_dict)
+
+    print(mars_data)
+
+    print("**** END SCRAPE FOR FEATURED IMAGE ****")
+
+    ######################################################################################
+    ##
+    ##  END SCRAPE FOR FEATURED IMAGE
+    ##
+    ######################################################################################
+
+
+
+
+    ######################################################################################
+    ##
+    ##  BEGIN SCRAPE FOR MARS FACTS
+    ##
+    ######################################################################################
     
-    session.close()
+    print("**** BEGIN SCRAPE FOR MARS FACTS ****")
 
-    # Convert list of tuples into normal list
+    url = 'https://galaxyfacts-mars.com/'
+    #browser.visit(url)
+
+    time.sleep(1)
+
+    tables = pd.read_html(url)
+    html_table = tables[0]
+
+    html_table = html_table.to_html()
+
+    #Strip newlines
+    html_table = html_table.replace("\n", "")
+
+    mars_data_dict = {
+    "mars_facts": html_table
+    }
+    mars_data.append(mars_data_dict)
+
+    #print(html_table)
+
+    print("**** END SCRAPE FOR MARS FACTS ****")
+
+    ######################################################################################
+    ##
+    ##  END SCRAPE FOR MARS FACTS
+    ##
+    ######################################################################################
+
+
+
+
+    ######################################################################################
+    ##
+    ##  BEGIN SCRAPE FOR HEMISPHERES
+    ##
+    ######################################################################################
     
-    precip = {date: prcp for date, prcp in results}
-
-    all_precip = []
-    for date, prcp in results:
-        precip_dict = {}
-        precip_dict["date"] = date
-        precip_dict["prcp"] = prcp
-        all_precip.append(precip_dict)
-
-    return jsonify(precip)
-
-#################################################
-# STATIONS
-#################################################
-@app.route("/api/v1.0/stations")
-def stations():
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
-
-    """Return a list of all station data"""
-    # Query all stations
-
-    results = session.query(Station.station).all()
+    print("**** BEGIN SCRAPE FOR HEMISPHERES ****")
     
-    session.close()
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
 
-    stations = list(np.ravel(results))
-    
-    return jsonify(station_list=stations)
+    time.sleep(1)
 
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
 
-    # \/ THIS WORKS, TRYING ALTERNATE ROUTE
-    #results = session.query(Station.id, Station.station, Station.name, Station.latitude, Station.longitude, Station.elevation).all()
-    #
-    #session.close()
-
-    # Convert list of tuples into normal list
-    #all_stations = []
-    #for id, station, name, latitude, longitude, elevation in results:
-    #    station_dict = {}
-    #    station_dict["id"] = id
-    #    station_dict["name"] = name
-    #    station_dict["latitude"] = latitude
-    #    station_dict["longitude"] = longitude
-    #    station_dict["elevation"] = elevation
-    #    all_stations.append(station_dict)
-
-    #return jsonify(station=all_stations)
-    # /\ THIS WORKS, TRYING ALTERNATE ROUTE
+    results = soup.find_all('div', class_='item')
 
 
-
-
-#################################################
-# TOBS
-#################################################
-@app.route("/api/v1.0/tobs")
-def tobs():
-
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
-
-    results = session.query(Measurement.station,func.count(Measurement.station)).\
-        group_by(Measurement.station).\
-        order_by(func.count(Measurement.station).desc()).first()
+    sub_urls=[]
+    hemisphere_image_list =[]
+    for result in results:
+        # look for clickable links
+        href = result.find('a')['href']
+        LinkName = result.find('h3').text
+        sub_urls.append(url+href)
         
-    # ** THIS IS TO KEEP THE QUERY DYNAMIC IF THE DATABASE WERE TO GROW 
-    # ** WHILE REPORTING REQUIREMENTS REMAIN THE SAME
-    top_station = results[0]
+        browser.click_link_by_partial_text(LinkName)
+        clicked_html = url+browser.html
+        clicked_soup = BeautifulSoup(clicked_html, 'html.parser')
+        clicked_results = clicked_soup.find_all('div', class_='cover')
+        for clicked_result in clicked_results:
+            #hi_href = url+clicked_result.find('a')['href']
+            #hemisphere_image_dict={}
+            #hemisphere_image_dict["title"] = LinkName.rsplit(' ', 1)[0]
+            #hemisphere_image_dict["img_url"] = hi_href
+            #hemisphere_image_list.append(hemisphere_image_dict)
 
-    results = session.query(func.max(Measurement.date)).\
-        filter(Measurement.station == top_station).all()
+            hem_title = LinkName.rsplit(' ', 1)[0]
+            hem_hi_res = url+clicked_result.find('a')['href']
+            mars_data_dict = {
+                "hem_title": hem_title,
+                "hem_hi_res": hem_hi_res
+                }
+            
+            mars_data.append(mars_data_dict)
 
-    max_date = results[0][0]
-
-    # Convert max date to datetime, calculate -1 year, convert back into YYYY-MM-DD format for query
-    # ** THIS IS TO KEEP THE QUERY DYNAMIC IF THE DATABASE WERE TO GROW 
-    # ** WHILE REPORTING REQUIREMENTS REMAIN THE SAME
-    max_date_conv = datetime.strptime(max_date,'%Y-%m-%d' )
-    query_date = max_date_conv - dt.timedelta(days=365)
-    query_date_conv = query_date.strftime('%Y-%m-%d')
-
-
-    results = session.query(Measurement.tobs).\
-        filter(Measurement.station == top_station).\
-        filter(Measurement.date >= query_date_conv).all()
-    alltemps = list(np.ravel(results))
-
-    session.close()
-
-    return jsonify(temps=alltemps)
+        browser.click_link_by_partial_text('Back')
 
 
-#################################################
-# START AND/OR END DATES
-#################################################
-@app.route("/api/v1.0/<start_dt>")
-def start(start_dt):
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
-
-    results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start_dt).all()  
-
-    session.close()
-
-    stats = []
-    for min, avg, max in results:
-        stats_dict = {}
-        stats_dict["min"] = min
-        stats_dict["avg"] = avg
-        stats_dict["max"] = max
-        stats.append(stats_dict)
     
-    return jsonify(stats=stats)
 
-#################################################
+    print("**** END SCRAPE FOR HEMISPHERES ****")
 
-@app.route("/api/v1.0/<start_dt>/<end_dt>")
-def startend(start_dt,end_dt):
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
 
-    results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start_dt).\
-        filter(Measurement.date <= end_dt).all()  
+    ######################################################################################
+    ##
+    ##  END SCRAPE FOR HEMISPHERES
+    ##
+    ######################################################################################
 
-    session.close()
 
-    stats = []
-    for min, avg, max in results:
-        stats_dict = {}
-        stats_dict["min"] = min
-        stats_dict["avg"] = avg
-        stats_dict["max"] = max
-        stats.append(stats_dict)
+
+
+    ######################################################################################
+    ##
+    ##  BEGIN SCRAPE FOR HEADLINES
+    ##
+    ######################################################################################
     
-    return jsonify(stats=stats)
+    print("**** BEGIN SCRAPE FOR HEADLINES ****")
 
-#################################################
-if __name__ == "__main__":
-    app.run(debug=True)
+    url = 'https://redplanetscience.com/'
+    browser.visit(url)
+
+    time.sleep(1)
+
+    # Scrape page into Soup
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # Retrieve the parent divs for all articles
+    results = soup.find_all('div', class_='list_text')
+
+    # loop over results to get article data
+
+    # NOT GOING TO ATTEMPT TRYING TO CLICK THE 'MORE' BUTTON AS IT IS NOT ENABLED ON THE PAGE
+    #title_text=[]
+    #paragraph_text=[]
+
+    for result in results:
+        # scrape the article header 
+        title=(result.find('div', class_='content_title').text)
+
+        # scrape the article subheader
+        paragraph=(result.find('div', class_='article_teaser_body').text)
+
+        # Store data in a dictionary
+        mars_data_dict = {
+        "news_title": title,
+        "paragraph_text": paragraph
+        }
+        mars_data.append(mars_data_dict)
+
+    print("**** END SCRAPE FOR HEADLINES ****")
+
+    ######################################################################################
+    ##
+    ##  END SCRAPE FOR HEADLINES
+    ##
+    ######################################################################################
+
+    time.sleep(1)
+
+    # Close the browser after scraping
+    browser.quit()
+
+    print("==========================================")
+    print(" ENDING SCRAPE_MARS.PY")
+    print("==========================================")
+    
+    # Return results
+    return mars_data
