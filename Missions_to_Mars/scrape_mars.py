@@ -80,6 +80,10 @@ def scrape_info():
 
     tables = pd.read_html(url)
     html_table = tables[0]
+    html_table = html_table.rename(columns={0:"Description",1:"Mars",2:"Earth"})
+    html_table
+    html_table = html_table.set_index("Description")
+    html_table = html_table.iloc[1:,:]
 
     html_table = html_table.to_html()
 

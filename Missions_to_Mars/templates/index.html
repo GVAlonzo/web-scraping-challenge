@@ -37,7 +37,7 @@
       <h2>Mars Facts:</h2>
       {% for item in mars_info %}
         {% if item.mars_facts %}
-          {{ item.mars_facts }}
+          {{ item.mars_facts | safe}}
         {% endif %}
       {% endfor %}        
     </div>
