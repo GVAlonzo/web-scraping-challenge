@@ -52,8 +52,6 @@ def scrape_info():
     }
     mars_data.append(mars_data_dict)
 
-    print(mars_data)
-
     print("**** END SCRAPE FOR FEATURED IMAGE ****")
 
     ######################################################################################
@@ -94,8 +92,6 @@ def scrape_info():
     "mars_facts": html_table
     }
     mars_data.append(mars_data_dict)
-
-    #print(html_table)
 
     print("**** END SCRAPE FOR MARS FACTS ****")
 
@@ -140,11 +136,6 @@ def scrape_info():
         clicked_soup = BeautifulSoup(clicked_html, 'html.parser')
         clicked_results = clicked_soup.find_all('div', class_='cover')
         for clicked_result in clicked_results:
-            #hi_href = url+clicked_result.find('a')['href']
-            #hemisphere_image_dict={}
-            #hemisphere_image_dict["title"] = LinkName.rsplit(' ', 1)[0]
-            #hemisphere_image_dict["img_url"] = hi_href
-            #hemisphere_image_list.append(hemisphere_image_dict)
 
             hem_title = LinkName.rsplit(' ', 1)[0]
             hem_hi_res = url+clicked_result.find('a')['href']
@@ -157,11 +148,7 @@ def scrape_info():
 
         browser.click_link_by_partial_text('Back')
 
-
-    
-
     print("**** END SCRAPE FOR HEMISPHERES ****")
-
 
     ######################################################################################
     ##
@@ -195,8 +182,6 @@ def scrape_info():
     # loop over results to get article data
 
     # NOT GOING TO ATTEMPT TRYING TO CLICK THE 'MORE' BUTTON AS IT IS NOT ENABLED ON THE PAGE
-    #title_text=[]
-    #paragraph_text=[]
 
     for result in results:
         # scrape the article header 
