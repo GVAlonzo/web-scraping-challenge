@@ -134,7 +134,14 @@ def scrape_info():
         browser.click_link_by_partial_text(LinkName)
         clicked_html = url+browser.html
         clicked_soup = BeautifulSoup(clicked_html, 'html.parser')
-        clicked_results = clicked_soup.find_all('div', class_='cover')
+        # The code below works - was intially submitted to scrape tif images since
+        #   they are considered higher-res than jpg files, but do not render in HTML. 
+        #   The requirement is to display an image on the HTML page instead of the
+        #   downloadable link I provided as an alternative.
+        # \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/     
+        # clicked_results = clicked_soup.find_all('div', class_='cover')
+            # /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ 
+        clicked_results = clicked_soup.find_all('div', class_='downloads')
         for clicked_result in clicked_results:
 
             hem_title = LinkName.rsplit(' ', 1)[0]
@@ -177,25 +184,53 @@ def scrape_info():
     soup = BeautifulSoup(html, 'html.parser')
 
     # Retrieve the parent divs for all articles
-    results = soup.find_all('div', class_='list_text')
+    
+    # The code below works - was intially submitted to scrape ALL the headers & sub-headers
+    #   on the page, whereas the requirement is to scrape just the first one, per
+    #   the central grader and was corrected.
+    # \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ 
+    # results = soup.find_all('div', class_='list_text')
+    # /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ 
 
+    results = soup.find('div', class_='list_text')
+
+    
+    # The code below works - was intially submitted to scrape ALL the headers & sub-headers
+    #   on the page, whereas the requirement is to scrape just the first one, per
+    #   the central grader and was corrected.
+    # \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  
     # loop over results to get article data
 
     # NOT GOING TO ATTEMPT TRYING TO CLICK THE 'MORE' BUTTON AS IT IS NOT ENABLED ON THE PAGE
 
-    for result in results:
-        # scrape the article header 
-        title=(result.find('div', class_='content_title').text)
+    # for result in results:
+    #     # scrape the article header 
+    #     title=(result.find('div', class_='content_title').text)
 
-        # scrape the article subheader
-        paragraph=(result.find('div', class_='article_teaser_body').text)
+    #     # scrape the article subheader
+    #     paragraph=(result.find('div', class_='article_teaser_body').text)
 
-        # Store data in a dictionary
-        mars_data_dict = {
-        "news_title": title,
-        "paragraph_text": paragraph
-        }
-        mars_data.append(mars_data_dict)
+    #     # Store data in a dictionary
+    #     mars_data_dict = {
+    #     "news_title": title,
+    #     "paragraph_text": paragraph
+    #     }
+    #     mars_data.append(mars_data_dict)
+
+    # /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ 
+
+    # scrape the article header 
+    news_title = results.find('div', class_='content_title').text
+
+    # scrape the article subheader
+    paragraph_text = results.find('div', class_='article_teaser_body').text
+
+    # Store data in a dictionary
+    mars_data_dict = {
+    "news_title": news_title,
+    "paragraph_text": paragraph_text
+    }
+    mars_data.append(mars_data_dict)
 
     print("**** END SCRAPE FOR HEADLINES ****")
 
